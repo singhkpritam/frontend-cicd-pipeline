@@ -3,9 +3,9 @@ pipeline {
 
     stages {
 
-        stage('Clone') {
+        stage('Checkout Code') {
             steps {
-                git 'https://github.com/singhkpritam/frontend-cicd-pipeline.git'
+                checkout scm
             }
         }
 
