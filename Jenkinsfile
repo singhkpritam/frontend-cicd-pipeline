@@ -11,12 +11,16 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t frontend-app:${BUILD_NUMBER} .'
+                sh '''
+                eval $(minikube docker-env)
+                docker build -t frontend-app:${BUILD_NUMBER} .
+                '''
             }
         }
 
         stage('Deploy to Minikube') {
             steps {
+                sh 'kubectl apply -f deployment.yaml'
                 sh 'kubectl set image deployment/frontend frontend=frontend-app:${BUILD_NUMBER}'
                 sh 'kubectl apply -f service.yaml'
             }

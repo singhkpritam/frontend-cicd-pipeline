@@ -1,35 +1,36 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: frontend
-  labels:
-    app: frontend
+pipeline {
+    agent any
 
-spec:
-  replicas: 1
+    stages {
 
-  selector:
-    matchLabels:
-      app: frontend
+        stage('Checkout Code') {
+            steps {
+                checkout scm
+            }
+        }
 
-  template:
-    metadata:
-      labels:
-        app: frontend
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                eval $(minikube docker-env)
+                docker build -t frontend-app:${BUILD_NUMBER} .
+                '''
+            }
+        }
 
-    spec:
-      containers:
-      - name: frontend
-        image: frontend-app:v1
-        imagePullPolicy: Never
+        stage('Deploy to Minikube') {
+            steps {
+                sh 'kubectl apply -f deployment.yaml'
+                sh 'kubectl set image deployment/frontend frontend=frontend-app:${BUILD_NUMBER}'
+                sh 'kubectl apply -f service.yaml'
+            }
+        }
 
-        ports:
-        - containerPort: 80
-
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
+        stage('Verify') {
+            steps {
+                sh 'kubectl get pods'
+                sh 'kubectl get svc'
+            }
+        }
+    }
+}
