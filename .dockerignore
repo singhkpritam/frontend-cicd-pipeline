@@ -1,0 +1,17 @@
+.git
+.gitignore
+
+.vscode
+
+README.md
+
+node_modules
+
+*.log
+
+temp/
+tmp/
+
+
+Jenkinsfile
+k8
